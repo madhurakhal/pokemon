@@ -17,7 +17,7 @@
           <th scope="col" class="center-content">Types</th>
         </thead>
         <tbody>
-          @for (pokemon of pokemonRes.items; track $index) {
+          @for (pokemon of pokemonRes.items; track pokemon.id) {
           <tr (click)="viewDetail(pokemon)" class="cursor-pointer">
             <th scope="row" class="center-content">{{ pokemon.id }}</th>
             <th class="center-content">{{ pokemon.name }}</th>
@@ -52,8 +52,12 @@
           </pagination>
         </div>
       </div>
-      } @else {
+      } @else { @if(loading) {
       <app-loading-indicator />
+      } } @if(!loading && errorMessage) {
+      <div class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
       }
     </div>
   </div>

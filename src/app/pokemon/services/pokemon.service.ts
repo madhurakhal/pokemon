@@ -22,6 +22,7 @@ import {
 } from '../models/pokemon';
 import { PokemonTypesResponse } from '../models/responses/pokemon-types.response';
 import { PokemonsRespone } from '../models/responses/pokemons.response';
+import { PokemonQuery } from '../models/queries/pokemon.query';
 
 @Injectable({
   providedIn: 'root',
@@ -39,11 +40,11 @@ export class PokemonService {
     }),
   };
 
-  pokemons(queryParams: any = {}): Observable<PokemonsRespone> {
+  pokemons(queryParams: PokemonQuery): Observable<PokemonsRespone> {
     return this.httpClient.get<PokemonsRespone>(
       `${apiConfig.apiBaseUrl}/pokemon`,
       Object.assign({}, this.httpOptions, {
-        params: { ...queryParams, offeset: 0, limit: 20 },
+        params: { ...queryParams },
       })
     );
   }
@@ -54,7 +55,7 @@ export class PokemonService {
       .pipe(catchError(this.handleError));
   }
 
-  pokemonsWithDetils(queryParams: any = {}): Observable<{
+  pokemonsWithDetils(queryParams: PokemonQuery): Observable<{
     count: number;
     items: OverviewPokemonDto[];
   }> {

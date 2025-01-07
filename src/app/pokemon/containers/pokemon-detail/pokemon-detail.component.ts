@@ -4,7 +4,6 @@ import {
   catchError,
   combineLatest,
   EMPTY,
-  filter,
   map,
   switchMap,
   tap
@@ -29,7 +28,6 @@ export class PokemonDetailComponent {
     this.activatedRoute.params.pipe(map((params) => +params['id'])),
   ])
     .pipe(
-      filter((val) => !Number.isNaN(val[0])),
       tap(() => (this.isLoading = true)),
       switchMap((ids) => {
         return this.pokemonService
@@ -44,6 +42,7 @@ export class PokemonDetailComponent {
         return EMPTY;
       })
     );
+    
   handleBackBtn() {
     this.router.navigate(['pokemons']);
   }

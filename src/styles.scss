@@ -1,2 +1,3 @@
-@use "../node_modules/bootstrap-icons/font/bootstrap-icons.css";/* You can add global styles to this file, and also import other style files */
-@use "./app/assets/filter-components"
+@use "../node_modules/bootstrap-icons/font/bootstrap-icons.css";
+@use "./app/assets/filter-components";
+@use "./app/assets/responsivecontainer";
