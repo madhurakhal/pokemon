@@ -1,1 +1,14 @@
-<p>ability works!</p>
+<div class="row">
+  <div class="col-12">
+    @if(abilities.length) {
+       
+    <ul class="list-group">
+      @for (ability of abilities; track $index) {
+      <li class="list-group-item">{{ ability.ability.name }}</li>
+      }
+    </ul>
+    } @else {
+    <p>No abilities available</p>
+    }
+  </div>
+</div>

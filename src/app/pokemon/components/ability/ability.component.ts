@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { PokemonAbility } from '../../models/pokemon';
 
 @Component({
   selector: 'app-ability',
@@ -7,5 +8,5 @@ import { Component } from '@angular/core';
   standalone: false
 })
 export class AbilityComponent {
-
+  @Input() abilities: PokemonAbility[] = []
 }

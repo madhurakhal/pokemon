@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { PokemonMove } from '../../models/pokemon';
 
 @Component({
   selector: 'app-move',
@@ -7,5 +8,5 @@ import { Component } from '@angular/core';
   standalone: false
 })
 export class MoveComponent {
-
+  @Input() moves: PokemonMove[] = [];
 }

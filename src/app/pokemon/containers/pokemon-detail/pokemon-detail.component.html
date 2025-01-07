@@ -1,12 +1,12 @@
-@if(pokemonDetails$ | async; as pokemon) {
-<div class="row">
+<div class="row mb-3">
   <div class="col-12">
     <button type="button" class="btn btn-primary" (click)="handleBackBtn()">
       Back
     </button>
   </div>
 </div>
-<div class="row">
+@if(pokemonDetails$ | async; as pokemon ) {
+<div class="row ">
   <div class="col-5">
     <img
       priority
@@ -40,17 +40,23 @@
         </div>
       </tab>
       <tab heading="Abilities">
-        <app-ability />
+        <div class="mt-3">
+          <app-ability class="mt-3" [abilities]="pokemon.abilities" />
+        </div>
       </tab>
       <tab heading="Moves">
-        <app-move />
+        <app-move [moves]="pokemon.moves" />
       </tab>
       <tab heading="Stats">
-        <app-stat />
+        <app-stat [stats]="pokemon.stats" />
       </tab>
     </tabset>
   </div>
 </div>
-} @else {
+} @else { @if(isLoading) {
 <app-loading-indicator />
+} } @if(!isLoading && errorMessage) {
+<div class="alert alert-danger">
+  {{ errorMessage }}
+</div>
 }

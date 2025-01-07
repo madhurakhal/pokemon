@@ -1,1 +1,13 @@
-<p>move works!</p>
+<div class="row">
+  <div class="col-12">
+    @if(moves.length) {
+    <ul class="list-group">
+      @for (move of moves; track $index) {
+      <li class="list-group-item">{{ move.move.name }}</li>
+      }
+    </ul>
+    } @else {
+    <p>No moves available</p>
+    }
+  </div>
+</div>

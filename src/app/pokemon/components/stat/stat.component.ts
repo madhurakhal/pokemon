@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { PokemonStat } from '../../models/pokemon';
 
 @Component({
   selector: 'app-stat',
@@ -7,5 +8,5 @@ import { Component } from '@angular/core';
   standalone: false
 })
 export class StatComponent {
-
+  @Input({required: true}) stats: PokemonStat[] = [];
 }
