@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { BehaviorSubject, combineLatest, switchMap } from 'rxjs';
 import { OverviewPokemonDto } from '../../models/pokemon';
 import { PokemonService } from '../../services/pokemon.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-pokemons',
@@ -10,13 +11,15 @@ import { PokemonService } from '../../services/pokemon.service';
   standalone: false
 })
 export class PokemonsComponent {
+  private readonly pokemonService = inject(PokemonService)
+  private router = inject(Router);
   page = 1;
   private paginationSubject = new BehaviorSubject<{
     itemsPerPage: number,
     page: number
   }>({
     itemsPerPage: 10,
-    page: 0
+    page: 1
   });
   paginationSubjectAction$ = this.paginationSubject.asObservable();
 
@@ -27,7 +30,6 @@ export class PokemonsComponent {
   pokemonTypeSubjectAction$ = this.pokemonTypeSubject.asObservable();
 
 
-  private readonly pokemonService = inject(PokemonService)
   pokemons$ = combineLatest([
     this.paginationSubjectAction$,
     this.searchSubjectAction$,
@@ -39,20 +41,18 @@ export class PokemonsComponent {
     })
   )
 
-
-
   pokemonTypes$ = this.pokemonService.pokemonTypes();
-
+  
   viewDetail(pokemon: OverviewPokemonDto) {
-    console.log("viewing", pokemon)
+   this.router.navigate(["pokemons/", pokemon.id])
   }
 
   handlePokemonTypeChange(pokemonType: string) {
-    console.log(pokemonType)
+    this.pokemonTypeSubject.next(pokemonType)
   }
 
   handleSearchChange(search: string) {
-    console.log(search)
+    this.searchSubject.next(search)
   }
 
   handlePaginationChange(paginationInfo: { page: number, itemsPerPage: number }) {

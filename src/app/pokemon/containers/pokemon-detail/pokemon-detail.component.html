@@ -1,1 +1,56 @@
-<p>pokemon-detail works!</p>
+@if(pokemonDetails$ | async; as pokemon) {
+<div class="row">
+  <div class="col-12">
+    <button type="button" class="btn btn-primary" (click)="handleBackBtn()">
+      Back
+    </button>
+  </div>
+</div>
+<div class="row">
+  <div class="col-5">
+    <img
+      priority
+      [ngSrc]="pokemon.sprites.other['official-artwork'].front_default"
+      height="500"
+      width="500"
+    />
+  </div>
+  <div class="col-7">
+    <tabset>
+      <tab heading="General Information" id="tab1">
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="panel-data">
+              <div class="panel-data-label">
+                <label>Name:</label>
+              </div>
+              <div class="panel-data-value">
+                <p>{{ pokemon.name }}</p>
+              </div>
+            </div>
+            <div class="panel-data">
+              <div class="panel-data-label">
+                <label>Age:</label>
+              </div>
+              <div class="panel-data-value">
+                <p>{{ pokemon.weight }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </tab>
+      <tab heading="Abilities">
+        <app-ability />
+      </tab>
+      <tab heading="Moves">
+        <app-move />
+      </tab>
+      <tab heading="Stats">
+        <app-stat />
+      </tab>
+    </tabset>
+  </div>
+</div>
+} @else {
+<app-loading-indicator />
+}

@@ -18,7 +18,7 @@
         </thead>
         <tbody>
           @for (pokemon of pokemonRes.items; track $index) {
-          <tr (click)="viewDetail(pokemon)" class="cursor">
+          <tr (click)="viewDetail(pokemon)" class="cursor-pointer">
             <th scope="row" class="center-content">{{ pokemon.id }}</th>
             <th class="center-content">{{ pokemon.name }}</th>
             <th class="center-content">

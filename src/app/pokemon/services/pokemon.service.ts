@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { forkJoin, map, Observable, of, switchMap, tap } from 'rxjs';
 import { apiConfig } from "../../api-config";
-import { OverviewPokemonDto, Pokemon } from '../models/pokemon';
+import { OverviewPokemonDto, Pokemon, PokemonDetailsDto } from '../models/pokemon';
 import { PokemonsRespone } from '../models/responses/pokemons.response';
 import { PokemonTypesResponse } from '../models/responses/pokemon-types.response';
 
@@ -25,8 +25,8 @@ export class PokemonService {
     return this.httpClient.get<PokemonsRespone>(`${apiConfig.apiBaseUrl}/pokemon`, Object.assign({}, this.httpOptions, { params: { ...queryParams, offeset: 0, limit: 20 } }));
   }
 
-  private pokemonByUrl(url: string): Observable<Pokemon> {
-    return this.httpClient.get<Pokemon>(url, Object.assign({}, this.httpOptions));
+  pokemonById(pokemonId: number) {
+    return this.httpClient.get<PokemonDetailsDto>(`${apiConfig.apiBaseUrl}/pokemon/${pokemonId}`)
   }
 
   pokemonsWithDetils(queryParams: any = {}): Observable<{
@@ -74,5 +74,9 @@ export class PokemonService {
       .pipe(tap((data) => {
         this._pokemonTypes = [...data]
       }))
+  }
+
+  private pokemonByUrl(url: string): Observable<Pokemon> {
+    return this.httpClient.get<Pokemon>(url, Object.assign({}, this.httpOptions));
   }
 }
