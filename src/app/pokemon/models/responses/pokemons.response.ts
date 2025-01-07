@@ -1,5 +1,5 @@
 export type PokemonOverviewItem = {
-  id?: number;
+  id: number;
   name: string;
   url: string;
 }

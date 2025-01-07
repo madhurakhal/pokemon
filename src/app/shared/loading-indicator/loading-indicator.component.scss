@@ -1,0 +1,53 @@
+.loading-indicator__container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.loading-indicator__bar {
+  content: '';
+  background: rgb(0, 212, 255);
+  background: -moz-radial-gradient(circle, rgba(66, 139, 202, 1) 0%, rgba(66, 139, 202, 0) 50%);
+  background: -webkit-radial-gradient(circle, rgba(66, 139, 202, 1) 0%, rgba(66, 139, 202, 0) 50%);
+  background: radial-gradient(circle, rgba(66, 139, 202, 1) 0%, rgba(66, 139, 202, 0) 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#428bca", endColorstr="#428bca", GradientType=1);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-size: 400% 400%;
+  -webkit-animation: slidingLoader 1200ms ease infinite;
+  -moz-animation: slidingLoader 1200ms ease infinite;
+  animation: slidingLoader 1200ms ease infinite;
+}
+
+@-webkit-keyframes slidingLoader {
+  0% {
+    background-position: 0% 50%
+  }
+
+  100% {
+    background-position: 100% 50%
+  }
+}
+
+@-moz-keyframes slidingLoader {
+  0% {
+    background-position: 0% 50%
+  }
+
+  100% {
+    background-position: 100% 50%
+  }
+}
+
+@keyframes slidingLoader {
+  0% {
+    background-position: 0% 50%
+  }
+
+  100% {
+    background-position: 100% 50%
+  }
+}

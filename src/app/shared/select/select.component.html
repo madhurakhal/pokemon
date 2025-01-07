@@ -1,0 +1,13 @@
+<div class="filters-group w-100">
+  <div class="form-group">
+    <label>{{ label }}</label>
+  </div>
+  <div class="control">
+    <select class="form-control" [(ngModel)]="value" (ngModelChange)="handleModelhanged()">
+      <option [ngValue]="''">Select type</option>
+      @for (option of options; track $index) {
+      <option [ngValue]="option">{{ option }}</option>
+      }
+    </select>
+  </div>
+</div>
