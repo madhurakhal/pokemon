@@ -1,0 +1,14 @@
+.tags {
+  display: flex;
+  gap: 3px;
+}
+
+.tag {
+  display: flex;
+  flex-wrap: nowrap;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 3px 5px;
+  background-color: #f1f5f9;
+  color: #334155;
+}

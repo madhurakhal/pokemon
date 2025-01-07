@@ -1,0 +1,9 @@
+<div class="filters-group w-100">
+  <div class="form-group">
+    <label>{{ label }}</label>
+  </div>
+  <div class="control">
+    <input type="search" class="form-control" [placeholder]="label"  [(ngModel)]="filters.search" #search
+    (keyup.enter)="handleEnter($event)">
+  </div>
+</div>
