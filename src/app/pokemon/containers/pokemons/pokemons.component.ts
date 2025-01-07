@@ -10,11 +10,6 @@ import { PokemonService } from '../../services/pokemon.service';
 export class PokemonsComponent {
 
   private readonly pokemonService = inject(PokemonService)
+  pokemons$ = this.pokemonService.pokemonsWithDetils();
 
-  constructor() {
-    this.pokemonService.pokemons()
-      .subscribe(val => {
-        console.log(val)
-      })
-  }
 }
