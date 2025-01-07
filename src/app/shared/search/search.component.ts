@@ -10,10 +10,11 @@ import { debounceTime, distinctUntilChanged, fromEvent, map } from 'rxjs';
   styleUrl: './search.component.scss'
 })
 export class SearchComponent implements AfterViewInit {
-
   @Input() label = 'Search';
+  @Input() throttle = 300;
   @Output() searchChange: EventEmitter<string> = new EventEmitter();
   @ViewChild("search", { static: true }) search!: ElementRef;
+
 
   destroyRef = inject(DestroyRef)
 
@@ -30,7 +31,7 @@ export class SearchComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     const eventStream = fromEvent(this.search.nativeElement, "input").pipe(
       map(() => this.filters.search),
-      debounceTime(200),
+      debounceTime(this.throttle),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
     );

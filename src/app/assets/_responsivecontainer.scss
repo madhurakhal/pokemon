@@ -1,0 +1,45 @@
+@mixin responsive-container {
+    position: relative;
+    height: 0;
+    width: 100%;
+    padding-top: 100%;
+  }
+  
+  @mixin responsive-image($width: width, $height: height) {
+    display: block;
+    top: 0;
+    left: 0;
+    #{$width}: 100%;
+    #{$height}: 100%;
+    position: absolute;
+  }
+  
+  .responsive-image-contain {
+    @include responsive-container;
+  
+    img {
+      @include responsive-image;
+      object-fit: contain;
+    }
+  }
+  
+  .responsive-image-cover {
+    @include responsive-container;
+  
+    img {
+      @include responsive-image;
+      object-fit: cover;
+    }
+  }
+  
+  .responsive-image-true-size {
+    @include responsive-container;
+  
+    img {
+      @include responsive-image(max-width, max-height);
+      object-fit: cover;
+      top: 50%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+    }
+  }

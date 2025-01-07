@@ -1,21 +1,13 @@
-export type PokemonSprite = {
-  front_default: string;
-  other: {
-    "official-artwork": {
-      "front_default": string;
-    }
-  }
-}
-export type PokemonType = { slot: number, type: { name: string, url: string } };
+import { pokemon } from './data';
 
-export type Pokemon = {
-  id: string;
-  name: string;
-  sprites: PokemonSprite,
-  types: PokemonType[]
-}
+export type Pokemon = typeof pokemon;
+export type PokemonSprite = Pokemon['sprites']
+export type PokemonType =  Pokemon['types'][0]
+export type OverviewPokemonDto = Pick<Pokemon, 'name' | "id" | "types"> & {
+  previewUrl: string;
+};
+export type PokemonAbility = Pokemon['abilities'][0]
+export type PokemonDetailsDto = Pokemon;
+export type PokemonStat = Pokemon['stats'][0]
+export type PokemonMove = Pokemon['moves'][0]
 
-
-export type OverviewPokemonDto = Omit<Pokemon, "sprites"> & {
-  previewUrl: string
-}
