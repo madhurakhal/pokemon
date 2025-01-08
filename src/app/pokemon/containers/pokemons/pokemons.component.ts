@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, pipe, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, filter, map, pipe, switchMap, tap } from 'rxjs';
 import { OverviewPokemonDto } from '../../models/pokemon';
 import { PokemonService } from '../../services/pokemon.service';
 import { Router } from '@angular/router';
@@ -16,6 +16,7 @@ export class PokemonsComponent {
   private router = inject(Router);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   loading$ = this.loadingSubject.asObservable();
+  itemsPerPage = 10;
 
   private errorSubject = new BehaviorSubject<string>('');
   error$ = this.errorSubject.asObservable();
@@ -35,24 +36,28 @@ export class PokemonsComponent {
 
   pokemons$ = combineLatest([
     this.paginationSubjectAction$,
-    this.searchSubjectAction$,
     this.pokemonTypeSubjectAction$,
+    this.searchSubjectAction$
   ]).pipe(
     debounceTime(100),
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([paginationInfo, searchName, pokemonType]) =>
-      this.pokemonService.pokemonsWithDetils({
-        offset: paginationInfo.page == 1 ? 0 : (paginationInfo.page - 1) * paginationInfo.itemsPerPage + 1,
+    switchMap(([paginationInfo, pokemonType, search]) => {
+      const params = {
+        offset: this.calculateOffset(paginationInfo),
         limit: paginationInfo.itemsPerPage
-      }).pipe(
+      };
+      const request$ = pokemonType
+        ? this.pokemonService.pokemonByType({ ...params, type: pokemonType })
+        : this.pokemonService.pokemonsWithDetils(params)
+      return request$.pipe(
+        map((value) => ({
+          ...value,
+          items: value.items.filter(pokemon => !search || pokemon.name.includes(search))
+        })),
         tap(() => this.loadingSubject.next(false)),
-        catchError((error) => {
-          this.loadingSubject.next(false);
-          this.errorSubject.next(error);
-          return EMPTY;
-        })
-      )
-    )
+        catchError(this.handleError)
+      );
+    })
   );
 
   pokemonTypes$ = this.pokemonService.pokemonTypes();
@@ -62,6 +67,7 @@ export class PokemonsComponent {
   }
 
   handlePokemonTypeChange(pokemonType: string) {
+    this.paginationSubject.next({ page: 1, itemsPerPage: this.itemsPerPage });
     this.pokemonTypeSubject.next(pokemonType);
   }
 
@@ -72,4 +78,13 @@ export class PokemonsComponent {
   handlePaginationChange(paginationInfo: PaginationInfo) {
     this.paginationSubject.next(paginationInfo);
   }
+
+  private calculateOffset(paginationInfo: PaginationInfo): number {
+    return paginationInfo.page === 1 ? 0 : (paginationInfo.page - 1) * paginationInfo.itemsPerPage + 1;
+  }
+  private handleError(error: string) {
+    this.loadingSubject.next(false);
+    this.errorSubject.next(error);
+    return EMPTY;
+  };
 }

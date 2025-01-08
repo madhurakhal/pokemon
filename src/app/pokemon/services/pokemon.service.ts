@@ -23,6 +23,7 @@ import { PokemonTypesResponse } from '../models/responses/pokemon-types.response
 import { PokemonsRespone } from '../models/responses/pokemons.response';
 import { PokemonQuery } from '../models/queries/pokemon.query';
 import { APICONFIG } from '../../api-config';
+import { PokemonTypeResponse } from '../models/pokemon-type.data';
 
 @Injectable({
   providedIn: 'root',
@@ -97,20 +98,40 @@ export class PokemonService {
         }),
         tap((data) => {
           this._pokemonTypes = [...data];
-        })
+        }),
+        catchError(this.handleError)
       );
   }
 
-  pokemonByType(pokemonType: string) {
-    if (this._pokemonCache.get(pokemonType)) {
-      return of(this._pokemonCache.get(pokemonType));
-    }
+  pokemonByType(pokemonTypeQuery: PokemonQuery): Observable<{
+    count: number;
+    items: OverviewPokemonDto[];
+  }> {
     return this.httpClient
-      .get<string[]>(`${this.apiConfig.apiBaseUrl}/type/${pokemonType}`)
+      .get<PokemonTypeResponse>(`${this.apiConfig.apiBaseUrl}/type/${pokemonTypeQuery.type}`,  Object.assign({}, this.httpOptions, {
+        params: { ...pokemonTypeQuery },
+      }))
       .pipe(
-        tap((data) => {
-          this._pokemonTypes = [...data];
-        })
+        switchMap((response) =>
+          forkJoin(
+            response.pokemon.map((data) =>
+              this.pokemonByUrl(data.pokemon.url).pipe(
+                map((pokemonDetail: Pokemon) => ({
+                  id: pokemonDetail.id,
+                  name: pokemonDetail.name,
+                  types: pokemonDetail.types,
+                  previewUrl: pokemonDetail.sprites.front_default,
+                }))
+              )
+            )
+          ).pipe(
+            map((items) => ({
+              count: response.pokemon.length,
+              items: items.slice(pokemonTypeQuery.offset, pokemonTypeQuery.offset + pokemonTypeQuery.limit),
+            })),
+            catchError(this.handleError)
+          )
+        )
       );
   }
 
