@@ -1,9 +1,12 @@
 ## Running server
 
-To start a local development server, run:
+### Install nodejs if not installed on local computer. It can be downloaded from [https://nodejs.org/en](Node.js)
 
+### Install required dependencies
+`npm ci`
+
+To start a local development server, run:
 ```bash
-npm ci
 ng serve
 ```
 
