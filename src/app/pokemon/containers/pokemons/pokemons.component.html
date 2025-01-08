@@ -52,11 +52,14 @@
           </pagination>
         </div>
       </div>
-      } @else { @if(loading) {
-      <app-loading-indicator />
-      } } @if(!loading && errorMessage) {
+      } @else {
+
+        @if(loading$ | async) {
+          <app-loading-indicator />
+      }
+    } @if(error$ | async; as error) {
       <div class="alert alert-danger">
-        {{ errorMessage }}
+        {{ error }}
       </div>
       }
     </div>

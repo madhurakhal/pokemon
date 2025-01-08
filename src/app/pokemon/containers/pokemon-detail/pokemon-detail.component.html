@@ -6,17 +6,16 @@
   </div>
 </div>
 @if(pokemonDetails$ | async; as pokemon ) {
-<div class="row ">
+<div class="row">
   <div class="col-5">
     <div class="responsive-image-cover">
       <img
-      priority
-      [ngSrc]="pokemon.sprites.other['official-artwork'].front_default"
-      height="500"
-      width="500"
-    />
+        priority
+        [ngSrc]="pokemon.sprites.other['official-artwork'].front_default"
+        height="500"
+        width="500"
+      />
     </div>
-    
   </div>
   <div class="col-7">
     <tabset>
@@ -56,10 +55,10 @@
     </tabset>
   </div>
 </div>
-} @else { @if(isLoading) {
+} @else { @if(loading$ | async) {
 <app-loading-indicator />
-} } @if(!isLoading && errorMessage) {
+} } @if( error$ | async; as message) {
 <div class="alert alert-danger">
-  {{ errorMessage }}
+  {{ message }}
 </div>
 }
