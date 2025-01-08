@@ -14,7 +14,6 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-import { apiConfig } from '../../api-config';
 import {
   OverviewPokemonDto,
   Pokemon,
@@ -23,12 +22,15 @@ import {
 import { PokemonTypesResponse } from '../models/responses/pokemon-types.response';
 import { PokemonsRespone } from '../models/responses/pokemons.response';
 import { PokemonQuery } from '../models/queries/pokemon.query';
+import { APICONFIG } from '../../api-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PokemonService {
   private readonly httpClient = inject(HttpClient);
+  private readonly apiConfig = inject(APICONFIG);
+
   private _pokemonTypes: string[] = [];
   private _pokemonCache: Map<string, Pokemon> = new Map();
 
@@ -42,7 +44,7 @@ export class PokemonService {
 
   pokemons(queryParams: PokemonQuery): Observable<PokemonsRespone> {
     return this.httpClient.get<PokemonsRespone>(
-      `${apiConfig.apiBaseUrl}/pokemon`,
+      `${this.apiConfig.apiBaseUrl}/pokemon`,
       Object.assign({}, this.httpOptions, {
         params: { ...queryParams },
       })
@@ -51,7 +53,7 @@ export class PokemonService {
 
   pokemonById(pokemonId: number) {
     return this.httpClient
-      .get<PokemonDetailsDto>(`${apiConfig.apiBaseUrl}/pokemon/${pokemonId}`)
+      .get<PokemonDetailsDto>(`${this.apiConfig.apiBaseUrl}/pokemon/${pokemonId}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -88,7 +90,7 @@ export class PokemonService {
       return of([...this._pokemonTypes]);
     }
     return this.httpClient
-      .get<PokemonTypesResponse>(`${apiConfig.apiBaseUrl}/type/`)
+      .get<PokemonTypesResponse>(`${this.apiConfig.apiBaseUrl}/type/`)
       .pipe(
         map((response) => {
           return response.results.map((x) => x.name);
@@ -104,7 +106,7 @@ export class PokemonService {
       return of(this._pokemonCache.get(pokemonType));
     }
     return this.httpClient
-      .get<string[]>(`${apiConfig.apiBaseUrl}/type/${pokemonType}`)
+      .get<string[]>(`${this.apiConfig.apiBaseUrl}/type/${pokemonType}`)
       .pipe(
         tap((data) => {
           this._pokemonTypes = [...data];
