@@ -44,7 +44,7 @@
             [directionLinks]="false"
             [totalItems]="pokemonRes.count"
             [(ngModel)]="page"
-            [itemsPerPage]="10"
+            [itemsPerPage]="itemsPerPage"
             [directionLinks]="true"
             [maxSize]="10"
             (pageChanged)="handlePaginationChange($event)"
@@ -52,12 +52,9 @@
           </pagination>
         </div>
       </div>
-      } @else {
-
-        @if(loading$ | async) {
-          <app-loading-indicator />
-      }
-    } @if(error$ | async; as error) {
+      } @if(loading$ | async) {
+      <app-loading-indicator />
+      } @if(error$ | async; as error) {
       <div class="alert alert-danger">
         {{ error }}
       </div>
