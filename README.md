@@ -1,6 +1,6 @@
 ## Running server
 
-### Install nodejs if not installed on local computer. It can be downloaded from [https://nodejs.org/en](Node.js)
+### Install nodejs if not installed on local computer. It can be downloaded from [Node.js](https://nodejs.org/en)
 
 ### Install required dependencies
 `npm ci`
