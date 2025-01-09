@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, filter, map, pipe, switchMap, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { BehaviorSubject, catchError, combineLatest, debounceTime, EMPTY, map, switchMap, tap } from 'rxjs';
+import { PaginationInfo } from '../../models/pagination-info';
 import { OverviewPokemonDto } from '../../models/pokemon';
 import { PokemonService } from '../../services/pokemon.service';
-import { Router } from '@angular/router';
-import { PaginationInfo } from '../../models/pagination-info';
 
 @Component({
   selector: 'app-pokemons',
@@ -13,26 +13,27 @@ import { PaginationInfo } from '../../models/pagination-info';
 })
 export class PokemonsComponent {
   private readonly pokemonService = inject(PokemonService);
-  private router = inject(Router);
-  private loadingSubject = new BehaviorSubject<boolean>(false);
-  loading$ = this.loadingSubject.asObservable();
-  itemsPerPage = 10;
+  private readonly router = inject(Router);
 
-  private errorSubject = new BehaviorSubject<string>('');
-  error$ = this.errorSubject.asObservable();
-
-  page = 1;
-  private paginationSubject = new BehaviorSubject<PaginationInfo>({
+  private readonly loadingSubject = new BehaviorSubject<boolean>(false);
+  private readonly errorSubject = new BehaviorSubject<string>('');
+  private readonly paginationSubject = new BehaviorSubject<PaginationInfo>({
     itemsPerPage: 10,
     page: 1,
   });
-  paginationSubjectAction$ = this.paginationSubject.asObservable();
 
+  readonly loading$ = this.loadingSubject.asObservable();
+  readonly error$ = this.errorSubject.asObservable();
+  readonly itemsPerPage = 10;
+
+  paginationSubjectAction$ = this.paginationSubject.asObservable();
   private searchSubject = new BehaviorSubject<string>('');
   searchSubjectAction$ = this.searchSubject.asObservable();
 
   private pokemonTypeSubject = new BehaviorSubject<string>('');
   pokemonTypeSubjectAction$ = this.pokemonTypeSubject.asObservable();
+
+  readonly pokemonTypes$ = this.pokemonService.pokemonTypes();
 
   pokemons$ = combineLatest([
     this.paginationSubjectAction$,
@@ -40,7 +41,10 @@ export class PokemonsComponent {
     this.searchSubjectAction$
   ]).pipe(
     debounceTime(100),
-    tap(() => this.loadingSubject.next(true)),
+    tap(() => {
+      this.loadingSubject.next(true)
+      this.errorSubject.next('')
+    }),
     switchMap(([paginationInfo, pokemonType, search]) => {
       const params = {
         offset: this.calculateOffset(paginationInfo),
@@ -60,9 +64,8 @@ export class PokemonsComponent {
     })
   );
 
-  pokemonTypes$ = this.pokemonService.pokemonTypes();
 
-  viewDetail(pokemon: OverviewPokemonDto) {
+  viewDetail(pokemon: OverviewPokemonDto): void {
     this.router.navigate(['pokemons/', pokemon.id]);
   }
 
@@ -80,11 +83,15 @@ export class PokemonsComponent {
   }
 
   private calculateOffset(paginationInfo: PaginationInfo): number {
-    return paginationInfo.page === 1 ? 0 : (paginationInfo.page - 1) * paginationInfo.itemsPerPage + 1;
+    return paginationInfo.page === 1
+      ? 0
+      : (paginationInfo.page - 1) * paginationInfo.itemsPerPage + 1;
   }
+
   private handleError(error: string) {
     this.loadingSubject.next(false);
     this.errorSubject.next(error);
     return EMPTY;
   };
+
 }

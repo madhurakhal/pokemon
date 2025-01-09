@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   BehaviorSubject,
   catchError,
-  combineLatest,
   EMPTY,
   map,
   switchMap,
@@ -28,27 +27,23 @@ export class PokemonDetailComponent {
   private errorSubject = new BehaviorSubject<string>('');
   error$ = this.errorSubject.asObservable();
 
-  pokemonDetails$ = combineLatest([
-    this.activatedRoute.params.pipe(map((params) => +params['id'])),
-  ])
-    .pipe(
-      tap(() => this.loadingSubject.next(true)),
-      switchMap((ids) => {
-        return this.pokemonService
-          .pokemonById(ids[0])
-          .pipe(tap(() => this.loadingSubject.next(false)));
-      })
-    )
-    .pipe(
+  pokemonDetails$ = this.activatedRoute.params.pipe(
+    map(params => +params['id']),
+    tap(() => {
+      this.loadingSubject.next(true);
+      this.errorSubject.next('');
+    }),
+    switchMap(id => this.pokemonService.pokemonById(id).pipe(
       tap(() => this.loadingSubject.next(false)),
-      catchError((err) => {
+      catchError((error: string) => {
         this.loadingSubject.next(false);
-        this.errorSubject.next(err);
+        this.errorSubject.next(error ?? 'An error occurred while fetching Pokemon details');
         return EMPTY;
       })
-    );
+    ))
+  );
 
-  handleBackBtn() {
+  handleBackBtn(): void {
     this.router.navigate(['pokemons']);
   }
 }
