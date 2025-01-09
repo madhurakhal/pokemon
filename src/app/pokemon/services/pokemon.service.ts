@@ -33,9 +33,10 @@ export class PokemonService {
   private readonly apiConfig = inject(APICONFIG);
 
   private _pokemonTypes: string[] = [];
-  private _pokemonCache: Map<string, Pokemon> = new Map();
+  private _pokemonTypeCache: Map<string, PokemonTypeResponse> = new Map();
+  private _pokemonsCache: Map<string, Pokemon> = new Map();
 
-  httpOptions = {
+  private readonly httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
       'Cache-Control':
@@ -53,9 +54,11 @@ export class PokemonService {
   }
 
   pokemonById(pokemonId: number) {
-    return this.httpClient
-      .get<PokemonDetailsDto>(`${this.apiConfig.apiBaseUrl}/pokemon/${pokemonId}`)
-      .pipe(catchError(this.handleError));
+    const url = `${this.apiConfig.apiBaseUrl}/pokemon/${pokemonId}`;
+    return this.pokemonByUrl(url)
+      .pipe(
+        catchError(this.handleError)
+      )
   }
 
   pokemonsWithDetils(queryParams: PokemonQuery): Observable<{
@@ -108,7 +111,7 @@ export class PokemonService {
     items: OverviewPokemonDto[];
   }> {
     return this.httpClient
-      .get<PokemonTypeResponse>(`${this.apiConfig.apiBaseUrl}/type/${pokemonTypeQuery.type}`,  Object.assign({}, this.httpOptions, {
+      .get<PokemonTypeResponse>(`${this.apiConfig.apiBaseUrl}/type/${pokemonTypeQuery.type}`, Object.assign({}, this.httpOptions, {
         params: { ...pokemonTypeQuery },
       }))
       .pipe(
@@ -136,9 +139,15 @@ export class PokemonService {
   }
 
   private pokemonByUrl(url: string): Observable<Pokemon> {
+    if (this._pokemonsCache.has(url)) {
+      return of(this._pokemonsCache.get(url)!);
+    }
     return this.httpClient.get<Pokemon>(
       url,
       Object.assign({}, this.httpOptions)
+    ).pipe(
+      tap(pokemon => this._pokemonsCache.set(url, pokemon)),
+      catchError(this.handleError)
     );
   }
 
