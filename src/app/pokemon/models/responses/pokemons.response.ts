@@ -4,7 +4,7 @@ export type PokemonOverviewItem = {
   url: string;
 }
 
-export type PokemonsRespone = {
+export type PokemonsResponse = {
   count: number;
   next: string;
   results: PokemonOverviewItem[]

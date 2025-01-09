@@ -13,17 +13,25 @@ import {
   switchMap,
   tap,
   throwError,
+  retry
 } from 'rxjs';
+import { APICONFIG } from '../../api-config';
 import {
   OverviewPokemonDto,
   Pokemon,
-  PokemonDetailsDto,
 } from '../models/pokemon';
-import { PokemonTypesResponse } from '../models/responses/pokemon-types.response';
-import { PokemonsRespone } from '../models/responses/pokemons.response';
-import { PokemonQuery } from '../models/queries/pokemon.query';
-import { APICONFIG } from '../../api-config';
 import { PokemonTypeResponse } from '../models/pokemon-type.data';
+import { PokemonQuery } from '../models/queries/pokemon.query';
+import { PokemonTypesResponse } from '../models/responses/pokemon-types.response';
+import { PokemonsResponse } from '../models/responses/pokemons.response';
+
+
+
+
+const API_ENDPOINTS = {
+  POKEMON: 'pokemon',
+  TYPE: 'type',
+} as const;
 
 @Injectable({
   providedIn: 'root',
@@ -33,9 +41,9 @@ export class PokemonService {
   private readonly apiConfig = inject(APICONFIG);
 
   private _pokemonTypes: string[] = [];
-  private _pokemonCache: Map<string, Pokemon> = new Map();
+  private _pokemonsCache: Map<string, Pokemon> = new Map();
 
-  httpOptions = {
+  private readonly httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
       'Cache-Control':
@@ -43,19 +51,31 @@ export class PokemonService {
     }),
   };
 
-  pokemons(queryParams: PokemonQuery): Observable<PokemonsRespone> {
-    return this.httpClient.get<PokemonsRespone>(
-      `${this.apiConfig.apiBaseUrl}/pokemon`,
-      Object.assign({}, this.httpOptions, {
-        params: { ...queryParams },
-      })
-    );
+  pokemons(queryParams: PokemonQuery): Observable<PokemonsResponse> {
+    return this.httpClient
+      .get<PokemonsResponse>(
+        `${this.apiConfig.apiBaseUrl}/${API_ENDPOINTS.POKEMON}`,
+        this.getHttpOptions(queryParams)
+      )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      );
   }
 
-  pokemonById(pokemonId: number) {
-    return this.httpClient
-      .get<PokemonDetailsDto>(`${this.apiConfig.apiBaseUrl}/pokemon/${pokemonId}`)
-      .pipe(catchError(this.handleError));
+  pokemonById(pokemonId: number): Observable<Pokemon> {
+    const url = `${this.apiConfig.apiBaseUrl}/${API_ENDPOINTS.POKEMON}/${pokemonId}`;
+    return this.pokemonByUrl(url);
+  }
+
+  // Helper method to transform Pokemon data
+  private transformToPokemonOverview(pokemonDetail: Pokemon): OverviewPokemonDto {
+    return {
+      id: pokemonDetail.id,
+      name: pokemonDetail.name,
+      types: pokemonDetail.types,
+      previewUrl: pokemonDetail.sprites.front_default,
+    };
   }
 
   pokemonsWithDetils(queryParams: PokemonQuery): Observable<{
@@ -67,35 +87,30 @@ export class PokemonService {
         forkJoin(
           response.results.map((item) =>
             this.pokemonByUrl(item.url).pipe(
-              map((pokemonDetail: Pokemon) => ({
-                id: pokemonDetail.id,
-                name: pokemonDetail.name,
-                types: pokemonDetail.types,
-                previewUrl: pokemonDetail.sprites.front_default,
-              }))
+              map(this.transformToPokemonOverview)
             )
           )
         ).pipe(
           map((items) => ({
             count: response.count,
             items,
-          })),
-          catchError(this.handleError)
+          }))
         )
-      )
+      ),
+      catchError(this.handleError)
     );
   }
 
-  pokemonTypes() {
+  pokemonTypes(): Observable<string[]> {
     if (this._pokemonTypes.length) {
       return of([...this._pokemonTypes]);
     }
+
     return this.httpClient
-      .get<PokemonTypesResponse>(`${this.apiConfig.apiBaseUrl}/type/`)
+      .get<PokemonTypesResponse>(`${this.apiConfig.apiBaseUrl}/${API_ENDPOINTS.TYPE}`)
       .pipe(
-        map((response) => {
-          return response.results.map((x) => x.name);
-        }),
+        retry(3),
+        map((response) => response.results.map((x) => x.name)),
         tap((data) => {
           this._pokemonTypes = [...data];
         }),
@@ -108,47 +123,53 @@ export class PokemonService {
     items: OverviewPokemonDto[];
   }> {
     return this.httpClient
-      .get<PokemonTypeResponse>(`${this.apiConfig.apiBaseUrl}/type/${pokemonTypeQuery.type}`,  Object.assign({}, this.httpOptions, {
-        params: { ...pokemonTypeQuery },
-      }))
+      .get<PokemonTypeResponse>(
+        `${this.apiConfig.apiBaseUrl}/${API_ENDPOINTS.TYPE}/${pokemonTypeQuery.type}`,
+        this.getHttpOptions(pokemonTypeQuery)
+      )
       .pipe(
+        retry(3),
         switchMap((response) =>
           forkJoin(
             response.pokemon.map((data) =>
               this.pokemonByUrl(data.pokemon.url).pipe(
-                map((pokemonDetail: Pokemon) => ({
-                  id: pokemonDetail.id,
-                  name: pokemonDetail.name,
-                  types: pokemonDetail.types,
-                  previewUrl: pokemonDetail.sprites.front_default,
-                }))
+                map(this.transformToPokemonOverview)
               )
             )
           ).pipe(
             map((items) => ({
               count: response.pokemon.length,
-              items: items.slice(pokemonTypeQuery.offset, pokemonTypeQuery.offset + pokemonTypeQuery.limit),
-            })),
-            catchError(this.handleError)
+              items: items.slice(
+                pokemonTypeQuery.offset,
+                pokemonTypeQuery.offset + pokemonTypeQuery.limit
+              ),
+            }))
           )
-        )
+        ),
+        catchError(this.handleError)
       );
   }
 
-  private pokemonByUrl(url: string): Observable<Pokemon> {
-    return this.httpClient.get<Pokemon>(
-      url,
-      Object.assign({}, this.httpOptions)
-    );
+  private getHttpOptions(params?: Record<string, any>) {
+    return Object.assign({}, this.httpOptions, params ? { params } : {});
   }
 
-  private handleError(err: HttpErrorResponse): Observable<never> {
-    let errorMessage: string;
-    if (err.error) {
-      errorMessage = err.error;
-    } else {
-      errorMessage = `Something went wrong`;
+  private pokemonByUrl(url: string): Observable<Pokemon> {
+    if (this._pokemonsCache.has(url)) {
+      return of(this._pokemonsCache.get(url)!);
     }
-    return throwError(() => errorMessage);
+
+    return this.httpClient
+      .get<Pokemon>(url, this.httpOptions)
+      .pipe(
+        retry(3),
+        tap(pokemon => this._pokemonsCache.set(url, pokemon)),
+        catchError(this.handleError)
+      );
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    const errorMessage = error.error?.message || error.message || 'Something went wrong';
+    return throwError(() => new Error(errorMessage));
   }
 }
