@@ -68,15 +68,7 @@ export class PokemonService {
     return this.pokemonByUrl(url);
   }
 
-  // Helper method to transform Pokemon data
-  private transformToPokemonOverview(pokemonDetail: Pokemon): OverviewPokemonDto {
-    return {
-      id: pokemonDetail.id,
-      name: pokemonDetail.name,
-      types: pokemonDetail.types,
-      previewUrl: pokemonDetail.sprites.front_default,
-    };
-  }
+
 
   pokemonsWithDetils(queryParams: PokemonQuery): Observable<{
     count: number;
@@ -166,6 +158,15 @@ export class PokemonService {
         tap(pokemon => this._pokemonsCache.set(url, pokemon)),
         catchError(this.handleError)
       );
+  }
+
+  private transformToPokemonOverview(pokemonDetail: Pokemon): OverviewPokemonDto {
+    return {
+      id: pokemonDetail.id,
+      name: pokemonDetail.name,
+      types: pokemonDetail.types,
+      previewUrl: pokemonDetail.sprites.front_default,
+    };
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
