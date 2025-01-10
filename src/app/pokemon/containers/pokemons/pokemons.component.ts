@@ -34,7 +34,7 @@ export class PokemonsComponent {
   pokemonTypeSubjectAction$ = this.pokemonTypeSubject.asObservable();
 
   readonly pokemonTypes$ = this.pokemonService.pokemonTypes();
-
+  page = 1;
   pokemons$ = combineLatest([
     this.paginationSubjectAction$,
     this.pokemonTypeSubjectAction$,
